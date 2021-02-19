@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
 
     # Wait for services
     attempt_counter=0
-    max_attempts=6
+    max_attempts=300
     until [ "$(sudo docker ps --filter "name=docker_*_1*" --format "{{.Names}}" | wc -l)" == "6" ]; do
         if [ ${attempt_counter} -eq ${max_attempts} ];then
             echo "Max attempts reached"

@@ -1,0 +1,83 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c)
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: pgw-git
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: https://github.com/electrocucaracha/pgw
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pgw
+spec:
+  resources:
+    - name: src
+      type: git
+  tasks:
+    - name: tox-linting
+      taskRef:
+        name: linter-task
+      params:
+        - name: linter_tool
+          value: tox
+      resources:
+        inputs:
+          - name: repo
+            resource: src
+    - name: shellcheck-linting
+      taskRef:
+        name: linter-task
+      params:
+        - name: linter_tool
+          value: shellcheck
+      resources:
+        inputs:
+          - name: repo
+            resource: src
+    - name: hadolint-linting
+      taskRef:
+        name: linter-task
+      params:
+        - name: linter_tool
+          value: hadolint
+      resources:
+        inputs:
+          - name: repo
+            resource: src
+    - name: golangci-linting
+      taskRef:
+        name: linter-task
+      params:
+        - name: linter_tool
+          value: golangci-lint
+      resources:
+        inputs:
+          - name: repo
+            resource: src
+    - name: system-test
+      taskRef:
+        name: vind-task
+      resources:
+        inputs:
+          - name: repo
+            resource: src
+      runAfter:
+        - tox-linting
+        - shellcheck-linting
+        - hadolint-linting
+        - golangci-linting
