@@ -1,0 +1,164 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+version: '2.4'
+
+services:
+  enb:
+    image: electrocucaracha/enb:0.7.5
+    networks:
+      lte-s1u:
+        ipv4_address: 172.21.0.11
+      lte-euu:
+        ipv4_address: 10.0.3.254
+      lte-s1c:
+        ipv4_address: 172.21.1.11
+    depends_on:
+      - sgw
+      - mme
+      - pgw
+    cap_add:
+      - NET_ADMIN
+  mme:
+    image: electrocucaracha/mme:0.7.5
+    networks:
+      lte-s11:
+        ipv4_address: 172.22.0.12
+      lte-s1c:
+        ipv4_address: 172.21.1.12
+  sgw:
+    image: electrocucaracha/sgw:0.7.5
+    networks:
+      lte-s11:
+        ipv4_address: 172.22.0.13
+      lte-s1u:
+        ipv4_address: 172.21.0.13
+      lte-s5u:
+        ipv4_address: 172.25.0.13
+      lte-s5c:
+        ipv4_address: 172.25.1.13
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - S5U_NETWORK=172.25.0.0/24
+      - S5C_NETWORK=172.25.1.0/24
+      - SGI_NIC=eth2
+      - SGI_SUBNET=10.0.1.0/24
+      - LOG_LEVEL=debug
+  pgw:
+    image: electrocucaracha/pgw:0.0.1
+    networks:
+      lte-s5u:
+        ipv4_address: 172.25.0.14
+      lte-s5c:
+        ipv4_address: 172.25.1.14
+      lte-sgi:
+        ipv4_address: 10.0.1.254
+    cap_add:
+      - NET_ADMIN
+  http_server:
+    image: httpd:2.4.46-alpine
+    networks:
+      lte-sgi:
+        ipv4_address: 10.0.1.201
+    depends_on:
+      - pgw
+    command:
+      - "sh"
+      - "-c"
+      - >2
+        ip route add 10.0.3.0/24 via 10.0.1.254 &&
+        /usr/local/bin/httpd-foreground
+    cap_add:
+      - NET_ADMIN
+  external_client:
+    image: electrocucaracha/curl:7.67.0-alpine3.11
+    networks:
+      lte-euu:
+        ipv4_address: 10.0.3.201
+    depends_on:
+      - http_server
+    command:
+      - sh
+      - "-c"
+      - >2
+        ip route add 10.0.1.0/24 via 10.0.3.254 &&
+        while true; do
+        curl -s --connect-timeout 5 10.0.1.201 | sed -e 's/<[^>]*>//g' &&
+        sleep 30;
+        done
+    cap_add:
+      - NET_ADMIN
+
+networks:
+  lte-euu:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 2
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.3.0/24
+          ip_range: 10.0.3.128/24
+  lte-sgi:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 3
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.1.0/24
+          ip_range: 10.0.1.128/24
+  lte-s1u:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 4
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/24
+          ip_range: 172.21.0.128/24
+  lte-s1c:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 5
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.1.0/24
+          ip_range: 172.21.1.128/24
+  lte-s11:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 6
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.0.0/24
+          ip_range: 172.22.0.128/24
+  lte-s5u:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 7
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/24
+          ip_range: 172.25.0.128/24
+  lte-s5c:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 8
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.1.0/24
+          ip_range: 172.25.1.128/24
