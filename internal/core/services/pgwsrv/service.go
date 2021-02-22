@@ -14,6 +14,8 @@ limitations under the License.
 package pgwsrv
 
 import (
+	"fmt"
+
 	"github.com/electrocucaracha/pgw/internal/core/domain"
 	"github.com/electrocucaracha/pgw/internal/core/ports"
 	log "github.com/sirupsen/logrus"
@@ -47,13 +49,13 @@ func (srv *Service) Create(pgw *domain.Pgw) error {
 	if err := srv.ipRepository.Save(s5uIP, pgw.UserPlane.IP); err != nil {
 		log.WithError(err).Panic("S5-U IP Address storage error")
 
-		return ErrSaveUserPlaneIP
+		return fmt.Errorf("S5-U IP %q: %w", pgw.UserPlane.IP, ErrSaveIP)
 	}
 
 	if err := srv.ipRepository.Save(s5cIP, pgw.ControlPlane.IP); err != nil {
 		log.WithError(err).Panic("S5-C IP Address storage error")
 
-		return ErrSaveControlPlaneIP
+		return fmt.Errorf("S5-C IP %q: %w", pgw.ControlPlane.IP, ErrSaveIP)
 	}
 
 	return nil
@@ -63,12 +65,12 @@ func (srv *Service) Create(pgw *domain.Pgw) error {
 func (srv *Service) Get() (*domain.Pgw, error) {
 	userPlaneIP, err := srv.ipRepository.Get(s5uIP)
 	if err != nil {
-		return nil, errGetUserPlaneIP
+		return nil, fmt.Errorf("S5-U IP: %w", errGetIP)
 	}
 
 	controlPlaneIP, err := srv.ipRepository.Get(s5cIP)
 	if err != nil {
-		return nil, errGetControlPlaneIP
+		return nil, fmt.Errorf("S5-C IP: %w", errGetIP)
 	}
 
 	return domain.New(controlPlaneIP, userPlaneIP, "", ""), nil

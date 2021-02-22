@@ -20,12 +20,7 @@ import (
 var (
 	// ErrInvalidPGW indicates that an invalid PGW domain object was passed.
 	ErrInvalidPGW = errors.New("invalid PGW domain object")
-	// ErrSaveUserPlaneIP indicates a database failure during the storing
-	// user plane IP address.
-	ErrSaveUserPlaneIP = errors.New("fail to store S5-U IP Address")
-	// ErrSaveControlPlaneIP indicates a database failure during the storing
-	// control plane IP address.
-	ErrSaveControlPlaneIP = errors.New("fail to store S5-C IP Address")
-	errGetUserPlaneIP     = errors.New("fail to retrieve S5-U IP Address")
-	errGetControlPlaneIP  = errors.New("fail to retrieve S5-C IP Address")
+	// ErrSaveIP indicates a database failure during the storing IP addresses.
+	ErrSaveIP = errors.New("fail to store IP Address")
+	errGetIP  = errors.New("fail to retrieve IP Address")
 )
