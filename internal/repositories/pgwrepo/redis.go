@@ -29,6 +29,10 @@ func NewRedis() ports.IPRepository {
 	redisServerAddr := utils.GetEnv("REDIS_URL", "localhost:6379")
 	redisPassword := utils.GetEnv("REDIS_PASSWORD", "")
 
+	log.WithFields(log.Fields{
+		"Redis URL": redisServerAddr,
+	}).Debug("Creating Redis client")
+
 	client := redis.NewClient(&redis.Options{
 		Addr:     redisServerAddr,
 		Password: redisPassword,
@@ -47,6 +51,11 @@ func (repo *redisStore) Save(id, ip string) error {
 		log.WithError(err).Panic("Error storing Redis value")
 	}
 
+	log.WithFields(log.Fields{
+		"id": id,
+		"ip": ip,
+	}).Debug("IP address stored")
+
 	return nil
 }
 
@@ -56,6 +65,11 @@ func (repo *redisStore) Get(id string) (string, error) {
 	if err != nil {
 		log.WithError(err).Panic("Error getting Redis value")
 	}
+
+	log.WithFields(log.Fields{
+		"id": id,
+		"ip": val,
+	}).Debug("IP address retrieved")
 
 	return val, nil
 }

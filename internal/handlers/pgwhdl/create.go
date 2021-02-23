@@ -322,6 +322,10 @@ func (h *create) appendRoute(route *netlink.Route) {
 		log.WithError(err).Warnf("Failed to add %s route", route)
 	}
 
+	log.WithFields(log.Fields{
+		"route": route,
+	}).Debug("Adding User plane route")
+
 	h.addedRoutes = append(h.addedRoutes, route)
 }
 
@@ -330,6 +334,8 @@ func findRule(ms32 *net.IPNet, ifName string) bool {
 	rules, _ := netlink.RuleList(0)
 	for _, rule := range rules {
 		if rule.IifName == ifName && rule.Dst == ms32 {
+			log.Debugf("%s rule found", rule)
+
 			return true
 		}
 	}
@@ -341,6 +347,10 @@ func (h *create) appendRule(rule *netlink.Rule) {
 	if err := netlink.RuleAdd(rule); err != nil {
 		log.WithError(err).Warnf("Failed to add %s rule", rule)
 	}
+
+	log.WithFields(log.Fields{
+		"rule": rule,
+	}).Debug("Adding User plane rule")
 
 	h.addedRules = append(h.addedRules, rule)
 }
