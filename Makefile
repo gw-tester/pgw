@@ -32,7 +32,15 @@ bin/golangci-lint-${GOLANGCI_VERSION}:
 lint: bin/golangci-lint
 	bin/golangci-lint run --enable-all ./...
 
-deploy: lint test build
-	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml up --always-recreate-deps --detach
+deploy:
+	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml \
+	--env-file deployments/docker/.env up --always-recreate-deps --detach
 undeploy:
-	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml down --remove-orphans
+	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml \
+	down --remove-orphans
+
+logs:
+	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml logs
+
+system-test:
+	@vagrant up --no-destroy-on-error

@@ -31,12 +31,15 @@ Vagrant.configure("2") do |config|
     source /etc/profile.d/path.sh
 
     # Deploy GW-Tester services
+    make lint | tee ~/lint.log
+    make test | tee ~/test.log
+    make build | tee ~/build.log
     make deploy | tee ~/deploy.log
 
     # Wait for services
     attempt_counter=0
     max_attempts=300
-    until [ "$(sudo docker ps --filter "name=docker_*_1*" --format "{{.Names}}" | wc -l)" == "6" ]; do
+    until [ "$(sudo docker ps --filter "name=docker_*_1*" --format "{{.Names}}" | wc -l)" -gt "6" ]; do
         if [ ${attempt_counter} -eq ${max_attempts} ];then
             echo "Max attempts reached"
             exit 1
