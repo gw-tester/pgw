@@ -1,6 +1,6 @@
 FROM golang:1.16-alpine3.13 as build
 
-WORKDIR /go/src/github.com/electrocucaracha/pgw
+WORKDIR /go/src/github.com/gw-tester/pgw
 
 ENV GO111MODULE "on"
 ENV CGO_ENABLED "0"

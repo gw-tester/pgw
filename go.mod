@@ -1,4 +1,4 @@
-module github.com/electrocucaracha/pgw
+module github.com/gw-tester/pgw
 
 go 1.16
 

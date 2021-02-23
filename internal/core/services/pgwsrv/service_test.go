@@ -14,9 +14,9 @@ limitations under the License.
 package pgwsrv_test
 
 import (
-	"github.com/electrocucaracha/pgw/internal/core/domain"
-	"github.com/electrocucaracha/pgw/internal/core/services/pgwsrv"
-	"github.com/electrocucaracha/pgw/internal/repositories/pgwrepo"
+	"github.com/gw-tester/pgw/internal/core/domain"
+	"github.com/gw-tester/pgw/internal/core/services/pgwsrv"
+	"github.com/gw-tester/pgw/internal/repositories/pgwrepo"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

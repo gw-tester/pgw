@@ -14,9 +14,9 @@ limitations under the License.
 package pgwrepo
 
 import (
-	"github.com/electrocucaracha/pgw/internal/core/ports"
-	"github.com/electrocucaracha/pgw/internal/pkg/utils"
 	"github.com/go-redis/redis"
+	"github.com/gw-tester/pgw/internal/core/ports"
+	"github.com/gw-tester/pgw/internal/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -16,8 +16,8 @@ package pgwsrv
 import (
 	"fmt"
 
-	"github.com/electrocucaracha/pgw/internal/core/domain"
-	"github.com/electrocucaracha/pgw/internal/core/ports"
+	"github.com/gw-tester/pgw/internal/core/domain"
+	"github.com/gw-tester/pgw/internal/core/ports"
 	log "github.com/sirupsen/logrus"
 )
 

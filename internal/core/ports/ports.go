@@ -13,7 +13,7 @@ limitations under the License.
 
 package ports
 
-import "github.com/electrocucaracha/pgw/internal/core/domain"
+import "github.com/gw-tester/pgw/internal/core/domain"
 
 // IPRepository exposes methods to save, get and drop IP address information.
 type IPRepository interface {

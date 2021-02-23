@@ -16,13 +16,13 @@ package main
 import (
 	"os"
 
-	"github.com/electrocucaracha/pgw/internal/core/domain"
-	"github.com/electrocucaracha/pgw/internal/core/ports"
-	service "github.com/electrocucaracha/pgw/internal/core/services/pgwsrv"
-	"github.com/electrocucaracha/pgw/internal/pkg/discover"
-	"github.com/electrocucaracha/pgw/internal/pkg/utils"
-	repository "github.com/electrocucaracha/pgw/internal/repositories/pgwrepo"
-	router "github.com/electrocucaracha/pgw/internal/routers/pgwrouter"
+	"github.com/gw-tester/pgw/internal/core/domain"
+	"github.com/gw-tester/pgw/internal/core/ports"
+	service "github.com/gw-tester/pgw/internal/core/services/pgwsrv"
+	"github.com/gw-tester/pgw/internal/pkg/discover"
+	"github.com/gw-tester/pgw/internal/pkg/utils"
+	repository "github.com/gw-tester/pgw/internal/repositories/pgwrepo"
+	router "github.com/gw-tester/pgw/internal/routers/pgwrouter"
 	log "github.com/sirupsen/logrus"
 )
 

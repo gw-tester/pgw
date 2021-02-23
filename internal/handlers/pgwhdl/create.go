@@ -16,7 +16,7 @@ package pgwhdl
 import (
 	"net"
 
-	"github.com/electrocucaracha/pgw/internal/core/domain"
+	"github.com/gw-tester/pgw/internal/core/domain"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"

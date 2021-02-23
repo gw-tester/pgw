@@ -18,7 +18,7 @@ spec:
     - name: revision
       value: master
     - name: url
-      value: https://github.com/electrocucaracha/pgw
+      value: https://github.com/gw-tester/pgw
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline

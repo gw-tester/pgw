@@ -19,9 +19,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/electrocucaracha/pgw/internal/core/domain"
-	"github.com/electrocucaracha/pgw/internal/handlers/commonhdl"
-	"github.com/electrocucaracha/pgw/internal/handlers/pgwhdl"
+	"github.com/gw-tester/pgw/internal/core/domain"
+	"github.com/gw-tester/pgw/internal/handlers/commonhdl"
+	"github.com/gw-tester/pgw/internal/handlers/pgwhdl"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"github.com/wmnsk/go-gtp/gtpv1"

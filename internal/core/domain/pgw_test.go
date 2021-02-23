@@ -17,7 +17,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/electrocucaracha/pgw/internal/core/domain"
+	"github.com/gw-tester/pgw/internal/core/domain"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/wmnsk/go-gtp/gtpv2"

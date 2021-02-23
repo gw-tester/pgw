@@ -13,7 +13,7 @@ limitations under the License.
 
 package pgwrepo
 
-import "github.com/electrocucaracha/pgw/internal/core/ports"
+import "github.com/gw-tester/pgw/internal/core/ports"
 
 type memkvs struct {
 	kvs map[string]string
