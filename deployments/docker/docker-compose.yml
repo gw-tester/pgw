@@ -11,6 +11,20 @@
 version: '2.4'
 
 services:
+  db:
+    image: redis:6.0-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-secure}"]
+    restart: unless-stopped
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDISCLI_AUTH=${REDIS_PASSWORD:-secure}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 30
+    networks:
+      mgmt:
   enb:
     image: electrocucaracha/enb:0.7.5
     networks:
@@ -46,13 +60,9 @@ services:
         ipv4_address: 172.25.1.13
     cap_add:
       - NET_ADMIN
-    environment:
-      - S5U_NETWORK=172.25.0.0/24
-      - S5C_NETWORK=172.25.1.0/24
-      - SGI_NIC=eth2
-      - SGI_SUBNET=10.0.1.0/24
-      - LOG_LEVEL=debug
   pgw:
+    build:
+      context: ../../
     image: electrocucaracha/pgw:0.0.1
     networks:
       lte-s5u:
@@ -61,8 +71,22 @@ services:
         ipv4_address: 172.25.1.14
       lte-sgi:
         ipv4_address: 10.0.1.254
+      mgmt:
     cap_add:
       - NET_ADMIN
+    links:
+      - db:redis
+    environment:
+      - S5U_NETWORK=172.25.0.0/24
+      - S5C_NETWORK=172.25.1.0/24
+      - SGI_NIC=eth3
+      - SGI_SUBNET=10.0.1.0/24
+      - LOG_LEVEL=DEBUG
+      - REDIS_URL=redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-secure}
+    depends_on:
+      db:
+        condition: service_healthy
   http_server:
     image: httpd:2.4.46-alpine
     networks:
@@ -98,6 +122,15 @@ services:
       - NET_ADMIN
 
 networks:
+  mgmt:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 1
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.233.64.0/24
+          ip_range: 10.233.64.128/24
   lte-euu:
     driver: overlay
     driver_opts:
