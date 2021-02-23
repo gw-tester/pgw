@@ -69,9 +69,9 @@ spec:
         inputs:
           - name: repo
             resource: src
-    - name: system-test
+    - name: integration-test
       taskRef:
-        name: vind-task
+        name: docker-build
       resources:
         inputs:
           - name: repo
@@ -81,3 +81,12 @@ spec:
         - shellcheck-linting
         - hadolint-linting
         - golangci-linting
+    - name: system-test
+      taskRef:
+        name: vind-task
+      resources:
+        inputs:
+          - name: repo
+            resource: src
+      runAfter:
+        - integration-test
