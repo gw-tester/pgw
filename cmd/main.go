@@ -45,6 +45,11 @@ func getRepository() ports.IPRepository {
 		return repository.NewRedis()
 	}
 
+	etcdURL, ok := os.LookupEnv("ETCD_URL")
+	if ok && etcdURL != "" {
+		return repository.NewETCD()
+	}
+
 	return repository.NewMemKVS()
 }
 

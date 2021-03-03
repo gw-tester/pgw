@@ -14,6 +14,7 @@ is the usage of a external database for sharing IP addresses.
 | LOG_LEVEL      | info          | Specifies the application log level                     |
 | REDIS_URL      |               | Specifies the Connection string for Redis Datastore     |
 | REDIS_PASSWORD |               | Specifies the passdor for connecting to Redis Datastore |
+| ETCD_URL       |               | Specifies the Connection string for ETCD Datastore      |
 | S5U_NETWORK    | 172.25.0.0/24 | Defines the S5 User Plane Network CIDR                  |
 | S5C_NETWORK    | 172.25.1.0/24 | Defines the S5 Control Plane Network CIDR               |
 | SGI_NIC        | eth2          | Network interface used for SGI connection               |
