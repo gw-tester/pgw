@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	s5cIP string = "s5cIP"
-	s5uIP string = "s5uIP"
+	s5cIP string = "pgw_s5c_ip"
+	s5uIP string = "pgw_s5u_ip"
 )
 
 // Service provides methods to create, retrieve and delete PGW instances.
