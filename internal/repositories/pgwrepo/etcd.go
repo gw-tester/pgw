@@ -17,6 +17,7 @@ import (
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/gw-tester/pgw/internal/core/ports"
 	"github.com/gw-tester/pgw/internal/pkg/utils"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,7 +42,7 @@ func NewETCD() ports.IPRepository {
 func (repo *etcdStore) Save(id, ip string) error {
 	_, err := repo.client.Set("/"+id, ip, 0)
 	if err != nil {
-		log.WithError(err).Panic("Error storing ETCD value")
+		return errors.Wrap(err, "Error storing ETCD value")
 	}
 
 	log.WithFields(log.Fields{
@@ -56,7 +57,7 @@ func (repo *etcdStore) Save(id, ip string) error {
 func (repo *etcdStore) Get(id string) (string, error) {
 	response, err := repo.client.Get(id, false, false)
 	if err != nil {
-		log.WithError(err).Panic("Error getting ETCD value")
+		return "", errors.Wrap(err, "Error getting ETCD value")
 	}
 
 	val := response.Node.Value

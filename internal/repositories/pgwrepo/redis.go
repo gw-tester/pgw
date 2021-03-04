@@ -17,6 +17,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/gw-tester/pgw/internal/core/ports"
 	"github.com/gw-tester/pgw/internal/pkg/utils"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -48,7 +49,7 @@ func NewRedis() ports.IPRepository {
 // Save stores the entry value into a specific id.
 func (repo *redisStore) Save(id, ip string) error {
 	if err := repo.client.Set(id, ip, 0).Err(); err != nil {
-		log.WithError(err).Panic("Error storing Redis value")
+		return errors.Wrap(err, "Error storing Redis value")
 	}
 
 	log.WithFields(log.Fields{
@@ -63,7 +64,7 @@ func (repo *redisStore) Save(id, ip string) error {
 func (repo *redisStore) Get(id string) (string, error) {
 	val, err := repo.client.Get(id).Result()
 	if err != nil {
-		log.WithError(err).Panic("Error getting Redis value")
+		return "", errors.Wrap(err, "Error getting Redis value")
 	}
 
 	log.WithFields(log.Fields{
