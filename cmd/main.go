@@ -14,65 +14,84 @@ limitations under the License.
 package main
 
 import (
-	"os"
-
+	arg "github.com/alexflint/go-arg"
 	"github.com/gw-tester/ip-discover/pkg/discover"
 	"github.com/gw-tester/pgw/internal/core/domain"
 	"github.com/gw-tester/pgw/internal/core/ports"
 	service "github.com/gw-tester/pgw/internal/core/services/pgwsrv"
-	"github.com/gw-tester/pgw/internal/pkg/utils"
 	repository "github.com/gw-tester/pgw/internal/repositories/pgwrepo"
 	router "github.com/gw-tester/pgw/internal/routers/pgwrouter"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
-func getLogLevel() log.Level {
-	logLevel, ok := os.LookupEnv("LOG_LEVEL")
-	if !ok {
-		return log.InfoLevel
-	}
-
-	if userLogLevel, err := log.ParseLevel(logLevel); err == nil {
-		return userLogLevel
-	}
-
-	return log.InfoLevel
+type args struct {
+	Log           logLevel `arg:"env:LOG_LEVEL" default:"info" help:"Defines the level of logging for this program."`
+	RedisURL      string   `arg:"env:REDIS_URL" help:"Specifies the Redis URL connection string."`
+	RedisPassword string   `arg:"env:REDIS_PASSWORD" help:"Specifies the Redis user password."`
+	EtcdURL       string   `arg:"env:ETCD_URL" help:"Specifies the ETCD URL connection string."`
+	S5uNetwork    string   `arg:"env:S5U_NETWORK,required" help:"Defines the S5 User plane network."`
+	S5cNetwork    string   `arg:"env:S5C_NETWORK,required" help:"Defines the S5 Control plane network."`
+	SgiNic        string   `arg:"env:SGI_NIC,required" help:"Defines the SGi network interface."`
+	SgiSubnet     string   `arg:"env:SGI_SUBNET,required" help:"Defines the SGi subnet."`
 }
 
-func getRepository() ports.IPRepository {
-	redisURL, ok := os.LookupEnv("REDIS_URL")
-	if ok && redisURL != "" {
-		return repository.NewRedis()
+type logLevel struct {
+	Level log.Level
+}
+
+func (n *logLevel) UnmarshalText(b []byte) error {
+	s := string(b)
+
+	logLevel, err := log.ParseLevel(s)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse the log level")
 	}
 
-	etcdURL, ok := os.LookupEnv("ETCD_URL")
-	if ok && etcdURL != "" {
-		return repository.NewETCD()
+	n.Level = logLevel
+
+	return nil
+}
+
+func getRepository(a args) ports.IPRepository {
+	if a.RedisURL != "" {
+		return repository.NewRedis(a.RedisURL, a.RedisPassword)
+	}
+
+	if a.EtcdURL != "" {
+		return repository.NewETCD(a.EtcdURL)
 	}
 
 	return repository.NewMemKVS()
 }
 
-func main() {
-	log.SetLevel(getLogLevel())
+func (args) Version() string {
+	return "pgw 0.0.3"
+}
 
-	service := service.New(getRepository())
+func (args) Description() string {
+	return "this program provides PDN Gateway functionality."
+}
+
+func main() {
+	var args args
+
+	arg.MustParse(&args)
+	log.SetLevel(args.Log.Level)
+	service := service.New(getRepository(args))
 
 	// The discovery process requires specific order
-	s5uIP, err := discover.GetIPFromNetwork(utils.GetEnv("S5U_NETWORK", "172.25.0.0/24"))
+	s5uIP, err := discover.GetIPFromNetwork(args.S5uNetwork)
 	if err != nil {
 		log.WithError(err).Panic("Failed to discovery first IP address of S5-U network")
 	}
 
-	s5cIP, err := discover.GetIPFromNetwork(utils.GetEnv("S5C_NETWORK", "172.25.1.0/24"))
+	s5cIP, err := discover.GetIPFromNetwork(args.S5cNetwork)
 	if err != nil {
 		log.WithError(err).Panic("Failed to discovery first IP address of S5-C network")
 	}
 
-	sgiLink := utils.GetEnv("SGI_NIC", "eth2")
-	sgiSubnet := utils.GetEnv("SGI_SUBNET", "10.0.1.0/24")
-
-	pgw := domain.New(s5cIP.IP.String(), s5uIP.IP.String(), sgiLink, sgiSubnet)
+	pgw := domain.New(s5cIP.IP.String(), s5uIP.IP.String(), args.SgiNic, args.SgiSubnet)
 
 	if err := service.Create(pgw); err != nil {
 		log.WithError(err).Panic("Failed to store P-GW information")

@@ -16,7 +16,6 @@ package pgwrepo
 import (
 	"github.com/go-redis/redis"
 	"github.com/gw-tester/pgw/internal/core/ports"
-	"github.com/gw-tester/pgw/internal/pkg/utils"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,17 +25,14 @@ type redisStore struct {
 }
 
 // NewRedis creates a new instance to connect to Redis Server.
-func NewRedis() ports.IPRepository {
-	redisServerAddr := utils.GetEnv("REDIS_URL", "localhost:6379")
-	redisPassword := utils.GetEnv("REDIS_PASSWORD", "")
-
+func NewRedis(url, password string) ports.IPRepository {
 	log.WithFields(log.Fields{
-		"Redis URL": redisServerAddr,
+		"Redis URL": url,
 	}).Debug("Creating Redis client")
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     redisServerAddr,
-		Password: redisPassword,
+		Addr:     url,
+		Password: password,
 		DB:       0,
 	})
 	if _, err := client.Ping().Result(); err != nil {

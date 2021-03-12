@@ -16,7 +16,6 @@ package pgwrepo
 import (
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/gw-tester/pgw/internal/core/ports"
-	"github.com/gw-tester/pgw/internal/pkg/utils"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,14 +25,12 @@ type etcdStore struct {
 }
 
 // NewETCD creates a new instance to connect to ETCD Cluster.
-func NewETCD() ports.IPRepository {
-	etcdServerAddr := utils.GetEnv("ETCD_URL", "localhost:2379")
-
+func NewETCD(url string) ports.IPRepository {
 	log.WithFields(log.Fields{
-		"Redis URL": etcdServerAddr,
+		"Redis URL": url,
 	}).Debug("Creating ETC client")
 
-	client := etcd.NewClient([]string{etcdServerAddr})
+	client := etcd.NewClient([]string{url})
 
 	return &etcdStore{client: client}
 }

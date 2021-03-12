@@ -3,6 +3,7 @@ module github.com/gw-tester/pgw
 go 1.16
 
 require (
+	github.com/alexflint/go-arg v1.3.0
 	github.com/coreos/go-etcd v2.0.0+incompatible
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gw-tester/ip-discover v0.0.0-20210312025528-bfd51318b333
