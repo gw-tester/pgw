@@ -16,10 +16,10 @@ package main
 import (
 	"os"
 
+	"github.com/gw-tester/ip-discover/pkg/discover"
 	"github.com/gw-tester/pgw/internal/core/domain"
 	"github.com/gw-tester/pgw/internal/core/ports"
 	service "github.com/gw-tester/pgw/internal/core/services/pgwsrv"
-	"github.com/gw-tester/pgw/internal/pkg/discover"
 	"github.com/gw-tester/pgw/internal/pkg/utils"
 	repository "github.com/gw-tester/pgw/internal/repositories/pgwrepo"
 	router "github.com/gw-tester/pgw/internal/routers/pgwrouter"
@@ -59,8 +59,16 @@ func main() {
 	service := service.New(getRepository())
 
 	// The discovery process requires specific order
-	s5uIP := discover.GetIPFromNetwork(utils.GetEnv("S5U_NETWORK", "172.25.0.0/24"))
-	s5cIP := discover.GetIPFromNetwork(utils.GetEnv("S5C_NETWORK", "172.25.1.0/24"))
+	s5uIP, err := discover.GetIPFromNetwork(utils.GetEnv("S5U_NETWORK", "172.25.0.0/24"))
+	if err != nil {
+		log.WithError(err).Panic("Failed to discovery first IP address of S5-U network")
+	}
+
+	s5cIP, err := discover.GetIPFromNetwork(utils.GetEnv("S5C_NETWORK", "172.25.1.0/24"))
+	if err != nil {
+		log.WithError(err).Panic("Failed to discovery first IP address of S5-C network")
+	}
+
 	sgiLink := utils.GetEnv("SGI_NIC", "eth2")
 	sgiSubnet := utils.GetEnv("SGI_SUBNET", "10.0.1.0/24")
 
