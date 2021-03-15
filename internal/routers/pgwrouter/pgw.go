@@ -15,6 +15,7 @@ package pgwrouter
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -167,6 +168,7 @@ func (r *router) run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"S5-U": r.UserPlane.Address,
 	}).Info("Started serving S5-U")
+	fmt.Println("P-GW server has started") //nolint:forbidigo
 
 	for {
 		select {

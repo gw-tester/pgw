@@ -81,7 +81,7 @@ services:
       - S5C_NETWORK=172.25.1.0/24
       - SGI_NIC=eth3
       - SGI_SUBNET=10.0.1.0/24
-      - LOG_LEVEL=DEBUG
+      - LOG_LEVEL=INFO
       - REDIS_URL=redis:6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-secure}
     depends_on:

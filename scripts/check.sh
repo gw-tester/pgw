@@ -57,6 +57,7 @@ info "Validating that services have started"
 assert_contains "$http_server" "resuming normal operations"
 assert_contains "$pgw" "Started serving S5-C"
 assert_contains "$pgw" "Started serving S5-U"
+assert_contains "$pgw" "P-GW server has started"
 
 info "Validating session responses"
 assert_contains "$pgw" "Create Session Request"
