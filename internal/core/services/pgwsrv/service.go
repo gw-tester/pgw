@@ -75,3 +75,9 @@ func (srv *Service) Get() (*domain.Pgw, error) {
 
 	return domain.New(controlPlaneIP, userPlaneIP, "", ""), nil
 }
+
+// Remove deletes the PGW information from the repository.
+func (srv *Service) Remove() {
+	srv.ipRepository.Delete(s5uIP)
+	srv.ipRepository.Delete(s5cIP)
+}

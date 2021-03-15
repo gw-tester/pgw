@@ -70,3 +70,8 @@ func (repo *redisStore) Get(id string) (string, error) {
 
 	return val, nil
 }
+
+// Delete removes the given id entry from the datastore.
+func (repo *redisStore) Delete(id string) {
+	repo.client.Del(id)
+}

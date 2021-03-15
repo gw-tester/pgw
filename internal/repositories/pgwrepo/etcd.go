@@ -66,3 +66,11 @@ func (repo *etcdStore) Get(id string) (string, error) {
 
 	return val, nil
 }
+
+// Delete removes the given id entry from the datastore.
+func (repo *etcdStore) Delete(id string) {
+	_, err := repo.client.Delete(id, true)
+	if err != nil {
+		log.WithError(err).Error("Error deleting an ETCD entry")
+	}
+}

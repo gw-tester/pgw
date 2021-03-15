@@ -19,10 +19,12 @@ import "github.com/gw-tester/pgw/internal/core/domain"
 type IPRepository interface {
 	Save(id, ip string) error
 	Get(id string) (string, error)
+	Delete(id string)
 }
 
 // PGWService exposes an API to store, retrieve and delete PGW instances.
 type PGWService interface {
 	Create(pgw domain.Pgw) error
 	Get() (*domain.Pgw, error)
+	Remove()
 }

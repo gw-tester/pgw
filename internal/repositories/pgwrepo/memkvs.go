@@ -35,3 +35,8 @@ func (repo *memkvs) Save(id, ip string) error {
 func (repo *memkvs) Get(id string) (string, error) {
 	return repo.kvs[id], nil
 }
+
+// Delete removes the given id entry from the datastore.
+func (repo *memkvs) Delete(id string) {
+	delete(repo.kvs, id)
+}

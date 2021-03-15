@@ -96,6 +96,7 @@ func main() {
 	if err := service.Create(pgw); err != nil {
 		log.WithError(err).Panic("Failed to store P-GW information")
 	}
+	defer service.Remove()
 
 	router := router.New(pgw)
 	if router == nil {
