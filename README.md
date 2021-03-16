@@ -23,6 +23,13 @@ is the usage of a external database for sharing IP addresses.
 | SGI_NIC        | eth2          | Network interface used for SGI connection               |
 | SGI_SUBNET     | 10.0.1.0/24   | SGI Subnet                                              |
 
+### Management API
+
+| URL          | Description              |
+|:-------------|:-------------------------|
+| metrics/     | Prometheus metrics       |
+| healthcheck/ | Kubernetes health checks |
+
 ## Local Deployment
 
 This project can be deployed locally using [Vagrant tool][2] which
