@@ -27,8 +27,12 @@ import (
 	"github.com/InVisionApp/go-health/v2"
 	"github.com/InVisionApp/go-health/v2/handlers"
 	"github.com/gw-tester/pgw/internal/core/domain"
-	"github.com/gw-tester/pgw/internal/handlers/commonhdl"
+	"github.com/gw-tester/pgw/internal/handlers/counterhdl"
+	"github.com/gw-tester/pgw/internal/handlers/loggerhdl"
 	"github.com/gw-tester/pgw/internal/handlers/pgwhdl"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"github.com/wmnsk/go-gtp/gtpv1"
@@ -42,7 +46,8 @@ type router struct {
 	UserPlane       userPlane
 	ManagementPlane managementPlane
 
-	handlers []pgwhdl.Handler
+	sessionsProcessed prometheus.Counter
+	handlers          []pgwhdl.Handler
 
 	errorChan chan error
 }
@@ -72,9 +77,14 @@ type Router interface {
 	Close() error
 }
 
-func (r *router) registerHandler(messageType uint8, handler pgwhdl.Handler) {
-	r.ControlPlane.Connection.AddHandler(messageType, commonhdl.NewLogger(handler.Handle).Log)
-	r.handlers = append(r.handlers, handler)
+func (r *router) registerHandlers(config *domain.Pgw) {
+	r.ControlPlane.Connection.AddHandler(message.MsgTypeCreateSessionRequest, loggerhdl.Wrap(counterhdl.Wrap(
+		pgwhdl.NewCreate(r.UserPlane.Connection, config).Handle, r.sessionsProcessed)))
+	r.ControlPlane.Connection.AddHandler(message.MsgTypeDeleteSessionRequest, loggerhdl.Wrap(
+		pgwhdl.NewDelete().Handle))
+
+	http.HandleFunc("/healthcheck", handlers.NewJSONHandlerFunc(r.ManagementPlane.health, nil))
+	http.Handle("/metrics", promhttp.Handler())
 }
 
 // New initialize a router object with user and control plane connections.
@@ -99,20 +109,22 @@ func New(config *domain.Pgw, h *health.Health) Router {
 		return nil
 	}
 
-	userPlaneConnection := gtpv1.NewUPlaneConn(userPlaneAddr)
-
 	router := &router{
 		ControlPlane: controlPlane{
 			Connection: gtpv2.NewConn(controlPlaneAddr, gtpv2.IFTypeS5S8PGWGTPC, 0),
 			Address:    controlPlaneAddr.String(),
 		},
 		UserPlane: userPlane{
-			Connection: userPlaneConnection,
+			Connection: gtpv1.NewUPlaneConn(userPlaneAddr),
 			Address:    userPlaneAddr.String(),
 		},
 		ManagementPlane: managementPlane{
 			health: h,
 		},
+		sessionsProcessed: promauto.NewCounter(prometheus.CounterOpts{
+			Name: "sessions_created_total",
+			Help: "Create Session Request",
+		}),
 		handlers:  []pgwhdl.Handler{},
 		errorChan: nil,
 	}
@@ -128,10 +140,7 @@ func New(config *domain.Pgw, h *health.Health) Router {
 		log.WithError(err).Warn("Add main check error")
 	}
 
-	// register handlers for ALL the message you expect remote endpoint to send.
-	router.registerHandler(message.MsgTypeCreateSessionRequest, pgwhdl.NewCreate(userPlaneConnection, config))
-	router.registerHandler(message.MsgTypeDeleteSessionRequest, pgwhdl.NewDelete())
-	http.HandleFunc("/healthcheck", handlers.NewJSONHandlerFunc(h, nil))
+	router.registerHandlers(config)
 
 	return router
 }

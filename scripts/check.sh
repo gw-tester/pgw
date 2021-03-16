@@ -63,10 +63,16 @@ assert_non_empty "$http_server"
 assert_non_empty "$pgw"
 
 pgw_ipv4_address="$(docker exec docker_pgw_1 ip a s eth4 | grep -oE 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d' ' -f2)"
-info "Validating P-GW readiness ($pgw_ipv4_address)"
+info "P-GW IPv4 Address: $pgw_ipv4_address"
+
+info "Validating P-GW readiness"
 assert_equals "$(curl -s "$pgw_ipv4_address:8080/healthcheck" | jq -r '.status')" "ok"
 assert_equals "$(curl -s "$pgw_ipv4_address:8080/healthcheck" | jq -r '.details["datastore-check"].status')" "ok"
 assert_equals "$(curl -s "$pgw_ipv4_address:8080/healthcheck" | jq -r '.details["main-check"].status')" "ok"
+
+info "Validating P-GW metrics"
+assert_contains "$(curl -s "$pgw_ipv4_address:8080/metrics")" "sessions_created_total"
+assert_contains "$(curl -s "$pgw_ipv4_address:8080/metrics") | awk '/^sessions_created_total/{ print $2}'" "1"
 
 info "Validating that services have started"
 assert_contains "$http_server" "resuming normal operations"

@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package commonhdl
+package loggerhdl
 
 import (
 	"net"
@@ -21,24 +21,16 @@ import (
 	"github.com/wmnsk/go-gtp/gtpv2/message"
 )
 
-// Logger is a middleware handler that does request logging.
-type Logger struct {
-	handle gtpv2.HandlerFunc
-}
+// Wrap ensures that entry logs are registered.
+func Wrap(apiHandler func(connection *gtpv2.Conn,
+	sender net.Addr, msg message.Message) error) (handler func(connection *gtpv2.Conn,
+	sender net.Addr, msg message.Message) error) {
+	return func(connection *gtpv2.Conn, sender net.Addr, msg message.Message) error {
+		log.WithFields(log.Fields{
+			"messageType":   msg.MessageTypeName(),
+			"addressSource": sender,
+		}).Info("Session received")
 
-// Log handles the request by passing it to the real handler and logging the request details.
-func (h *Logger) Log(connection *gtpv2.Conn, sender net.Addr, message message.Message) error {
-	log.WithFields(log.Fields{
-		"messageType":   message.MessageTypeName(),
-		"addressSource": sender,
-	}).Info("Session received")
-
-	return h.handle(connection, sender, message)
-}
-
-// NewLogger constructs a new Logger middleware handler.
-func NewLogger(handlerFunc gtpv2.HandlerFunc) *Logger {
-	return &Logger{
-		handle: handlerFunc,
+		return apiHandler(connection, sender, msg)
 	}
 }
