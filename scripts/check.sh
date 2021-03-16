@@ -54,16 +54,15 @@ function assert_contains {
 }
 
 info "Getting Docker process names"
-external_client=$(docker ps --filter "name=docker_external_client_1*" --format "{{.Names}}")
-http_server=$(docker ps --filter "name=docker_http_server_1*" --format "{{.Names}}")
-pgw=$(docker ps --filter "name=docker_pgw_1*" --format "{{.Names}}")
+external_client=$(docker ps --filter "name=deployments_external_client_1*" --format "{{.Names}}")
+http_server=$(docker ps --filter "name=deployments_http_server_1*" --format "{{.Names}}")
+pgw=$(docker ps --filter "name=deployments_pgw_1*" --format "{{.Names}}")
+pgw_ipv4_address="$(docker exec "$pgw" ip a s eth4 | grep -oE 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d' ' -f2)"
+info "P-GW IPv4 Management Address (bridge network): $pgw_ipv4_address"
 
 info "Validating non-empty logs"
 assert_non_empty "$http_server"
 assert_non_empty "$pgw"
-
-pgw_ipv4_address="$(docker exec docker_pgw_1 ip a s eth4 | grep -oE 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d' ' -f2)"
-info "P-GW IPv4 Address: $pgw_ipv4_address"
 
 info "Validating P-GW readiness"
 assert_equals "$(curl -s "$pgw_ipv4_address:8080/healthcheck" | jq -r '.status')" "ok"

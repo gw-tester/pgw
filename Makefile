@@ -37,14 +37,14 @@ lint: bin/golangci-lint
 	bin/golangci-lint run --enable-all ./...
 
 deploy:
-	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml \
-	--env-file deployments/docker/.env up --always-recreate-deps --detach
+	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker-compose.yml \
+	up --always-recreate-deps --detach
 undeploy:
-	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml \
+	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker-compose.yml \
 	down --remove-orphans
 
 logs:
-	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker/docker-compose.yml logs
+	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker-compose.yml logs
 
 system-test:
 	@vagrant up --no-destroy-on-error
