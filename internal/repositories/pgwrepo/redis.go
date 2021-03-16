@@ -75,3 +75,12 @@ func (repo *redisStore) Get(id string) (string, error) {
 func (repo *redisStore) Delete(id string) {
 	repo.client.Del(id)
 }
+
+// Status is used for performing a Redis check against a dependency.
+func (repo *redisStore) Status() (interface{}, error) {
+	if _, err := repo.client.Ping().Result(); err != nil {
+		return nil, errors.Wrap(err, "Ping failed")
+	}
+
+	return nil, nil
+}

@@ -34,6 +34,15 @@ function assert_non_empty {
     fi
 }
 
+function assert_equals {
+    local input=$1
+    local expected=$2
+
+    if [[ "$input" != "$expected" ]]; then
+        error "Got $input expected $expected"
+    fi
+}
+
 function assert_contains {
     local docker_ps=$1
     local expected=$2
@@ -52,6 +61,12 @@ pgw=$(docker ps --filter "name=docker_pgw_1*" --format "{{.Names}}")
 info "Validating non-empty logs"
 assert_non_empty "$http_server"
 assert_non_empty "$pgw"
+
+pgw_ipv4_address="$(docker exec docker_pgw_1 ip a s eth4 | grep -oE 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d' ' -f2)"
+info "Validating P-GW readiness ($pgw_ipv4_address)"
+assert_equals "$(curl -s "$pgw_ipv4_address:8080/healthcheck" | jq -r '.status')" "ok"
+assert_equals "$(curl -s "$pgw_ipv4_address:8080/healthcheck" | jq -r '.details["datastore-check"].status')" "ok"
+assert_equals "$(curl -s "$pgw_ipv4_address:8080/healthcheck" | jq -r '.details["main-check"].status')" "ok"
 
 info "Validating that services have started"
 assert_contains "$http_server" "resuming normal operations"

@@ -74,3 +74,8 @@ func (repo *etcdStore) Delete(id string) {
 		log.WithError(err).Error("Error deleting an ETCD entry")
 	}
 }
+
+// Status is used for performing a ETCD check against a dependency.
+func (repo *etcdStore) Status() (interface{}, error) {
+	return nil, nil
+}

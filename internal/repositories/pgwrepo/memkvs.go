@@ -13,7 +13,9 @@ limitations under the License.
 
 package pgwrepo
 
-import "github.com/gw-tester/pgw/internal/core/ports"
+import (
+	"github.com/gw-tester/pgw/internal/core/ports"
+)
 
 type memkvs struct {
 	kvs map[string]string
@@ -39,4 +41,9 @@ func (repo *memkvs) Get(id string) (string, error) {
 // Delete removes the given id entry from the datastore.
 func (repo *memkvs) Delete(id string) {
 	delete(repo.kvs, id)
+}
+
+// Status is used for performing a MemKV check against a dependency.
+func (repo *memkvs) Status() (interface{}, error) {
+	return nil, nil
 }

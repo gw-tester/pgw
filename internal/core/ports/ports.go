@@ -20,6 +20,7 @@ type IPRepository interface {
 	Save(id, ip string) error
 	Get(id string) (string, error)
 	Delete(id string)
+	Status() (interface{}, error)
 }
 
 // PGWService exposes an API to store, retrieve and delete PGW instances.

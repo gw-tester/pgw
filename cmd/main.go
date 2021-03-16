@@ -14,6 +14,9 @@ limitations under the License.
 package main
 
 import (
+	"time"
+
+	"github.com/InVisionApp/go-health/v2"
 	arg "github.com/alexflint/go-arg"
 	"github.com/gw-tester/ip-discover/pkg/discover"
 	"github.com/gw-tester/pgw/internal/core/domain"
@@ -78,6 +81,7 @@ func main() {
 
 	arg.MustParse(&args)
 	log.SetLevel(args.Log.Level)
+	repository := getRepository(args)
 	service := service.New(getRepository(args))
 
 	// The discovery process requires specific order
@@ -98,7 +102,19 @@ func main() {
 	}
 	defer service.Remove()
 
-	router := router.New(pgw)
+	h := health.New()
+	if err := h.AddChecks([]*health.Config{
+		{
+			Name:     "datastore-check",
+			Checker:  repository,
+			Interval: time.Duration(2) * time.Second,
+			Fatal:    true,
+		},
+	}); err != nil {
+		log.WithError(err).Warn("Add datastore check error")
+	}
+
+	router := router.New(pgw, h)
 	if router == nil {
 		log.Panic("Failed to initialize P-GW service")
 	}

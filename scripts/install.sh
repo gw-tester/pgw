@@ -45,7 +45,7 @@ function exit_trap {
 trap exit_trap ERR
 
 echo "Running installation process..."
-install_deps docker-compose docker make go-lang
+install_deps docker-compose docker make go-lang jq
 
 sudo docker network create --subnet 10.244.0.0/16 --opt com.docker.network.bridge.name=docker_gwbridge docker_gwbridge
 sudo docker swarm init --advertise-addr "${HOST_IP:-$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }')}"

@@ -15,11 +15,17 @@ package pgwrouter
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 
+	"github.com/InVisionApp/go-health/v2"
+	"github.com/InVisionApp/go-health/v2/handlers"
 	"github.com/gw-tester/pgw/internal/core/domain"
 	"github.com/gw-tester/pgw/internal/handlers/commonhdl"
 	"github.com/gw-tester/pgw/internal/handlers/pgwhdl"
@@ -31,8 +37,10 @@ import (
 )
 
 type router struct {
-	ControlPlane controlPlane
-	UserPlane    userPlane
+	mutex           sync.Mutex
+	ControlPlane    controlPlane
+	UserPlane       userPlane
+	ManagementPlane managementPlane
 
 	handlers []pgwhdl.Handler
 
@@ -42,12 +50,21 @@ type router struct {
 type controlPlane struct {
 	Connection *gtpv2.Conn
 	Address    string
+	isReady    bool
 }
 
 type userPlane struct {
 	Connection *gtpv1.UPlaneConn
 	Address    string
+	isReady    bool
 }
+
+type managementPlane struct {
+	health *health.Health
+}
+
+// ErrPlaneNotReady indicates that user and/or control plane services are not ready yet.
+var ErrPlaneNotReady = errors.New("not ready")
 
 // Router provides a server to process requests.
 type Router interface {
@@ -61,7 +78,7 @@ func (r *router) registerHandler(messageType uint8, handler pgwhdl.Handler) {
 }
 
 // New initialize a router object with user and control plane connections.
-func New(config *domain.Pgw) Router {
+func New(config *domain.Pgw, h *health.Health) Router {
 	if err := config.Validate(); err != nil {
 		log.WithError(err).Error("Invalid PGW domain object")
 
@@ -93,19 +110,28 @@ func New(config *domain.Pgw) Router {
 			Connection: userPlaneConnection,
 			Address:    userPlaneAddr.String(),
 		},
+		ManagementPlane: managementPlane{
+			health: h,
+		},
 		handlers:  []pgwhdl.Handler{},
 		errorChan: nil,
+	}
+
+	if err := h.AddChecks([]*health.Config{
+		{
+			Name:     "main-check",
+			Checker:  router,
+			Interval: time.Duration(2) * time.Second,
+			Fatal:    true,
+		},
+	}); err != nil {
+		log.WithError(err).Warn("Add main check error")
 	}
 
 	// register handlers for ALL the message you expect remote endpoint to send.
 	router.registerHandler(message.MsgTypeCreateSessionRequest, pgwhdl.NewCreate(userPlaneConnection, config))
 	router.registerHandler(message.MsgTypeDeleteSessionRequest, pgwhdl.NewDelete())
-
-	if err := router.UserPlane.Connection.EnableKernelGTP("gtp-pgw", gtpv1.RoleGGSN); err != nil {
-		log.WithError(err).Error("Enable Kernel GTP error")
-
-		return nil
-	}
+	http.HandleFunc("/healthcheck", handlers.NewJSONHandlerFunc(h, nil))
 
 	return router
 }
@@ -119,6 +145,12 @@ func (r *router) ListenAndServe() {
 	defer cancel()
 
 	fatalCh := make(chan error)
+
+	if err := r.UserPlane.Connection.EnableKernelGTP("gtp-pgw", gtpv1.RoleGGSN); err != nil {
+		log.WithError(err).Error("Enable Kernel GTP error")
+
+		return
+	}
 
 	go func() {
 		if err := r.run(ctx); err != nil {
@@ -144,30 +176,51 @@ func (r *router) ListenAndServe() {
 
 func (r *router) run(ctx context.Context) error {
 	go func() {
+		r.ControlPlane.isReady = true
 		if err := r.ControlPlane.Connection.ListenAndServe(ctx); err != nil {
 			log.WithError(err).Warn("Control Plane Listen and Serve error")
+
+			r.ControlPlane.isReady = false
 
 			return
 		}
 
-		log.Warn("Control Plane Connection ListenAndServe method exitted")
+		r.ControlPlane.isReady = false
 	}()
 	log.WithFields(log.Fields{
 		"S5-C": r.ControlPlane.Address,
 	}).Info("Started serving S5-C")
 
 	go func() {
+		r.UserPlane.isReady = true
 		if err := r.UserPlane.Connection.ListenAndServe(ctx); err != nil {
 			log.WithError(err).Warn("User Plane Listen and Serve error")
+
+			r.UserPlane.isReady = false
 
 			return
 		}
 
-		log.Warn("User Plane Connection ListenAndServe method exitted")
+		r.UserPlane.isReady = false
 	}()
 	log.WithFields(log.Fields{
 		"S5-U": r.UserPlane.Address,
 	}).Info("Started serving S5-U")
+
+	go func() {
+		if err := r.ManagementPlane.health.Start(); err != nil {
+			log.WithError(err).Warn("Unable to start healthcheck")
+		}
+
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			log.WithError(err).Warn("Management Plane Listen and Serve error")
+
+			return
+		}
+
+		log.Warn("Management Plane Connection ListenAndServe method exitted")
+	}()
+
 	fmt.Println("P-GW server has started") //nolint:forbidigo
 
 	for {
@@ -203,4 +256,17 @@ func (r *router) Close() error {
 	close(r.errorChan)
 
 	return nil
+}
+
+func (r *router) Status() (interface{}, error) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	response := map[string]bool{"ControlPlane": r.ControlPlane.isReady, "UserPlane": r.UserPlane.isReady}
+
+	if r.ControlPlane.isReady && r.UserPlane.isReady {
+		return response, nil
+	}
+
+	return response, ErrPlaneNotReady
 }
