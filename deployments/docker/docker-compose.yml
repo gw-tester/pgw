@@ -63,7 +63,7 @@ services:
   pgw:
     build:
       context: ../../
-    image: gwtester/pgw:0.0.1
+    image: gwtester/pgw:0.0.3
     networks:
       lte-s5u:
         ipv4_address: 172.25.0.14
