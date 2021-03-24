@@ -21,6 +21,28 @@ spec:
       value: https://github.com/gw-tester/pgw
 ---
 apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: linter-task
+spec:
+  resources:
+    inputs:
+      - name: repo
+        type: git
+        targetPath: src
+  steps:
+    - name: linter
+      image: github/super-linter:v3
+      workingDir: /workspace/src
+      env:
+        - name: LINTER_RULES_PATH
+          value: /
+        - name: DEFAULT_WORKSPACE
+          value: /workspace/src
+        - name: RUN_LOCAL
+          value: "true"
+---
+apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: pgw
@@ -29,42 +51,9 @@ spec:
     - name: src
       type: git
   tasks:
-    - name: tox-linting
+    - name: linting
       taskRef:
         name: linter-task
-      params:
-        - name: linter_tool
-          value: tox
-      resources:
-        inputs:
-          - name: repo
-            resource: src
-    - name: shellcheck-linting
-      taskRef:
-        name: linter-task
-      params:
-        - name: linter_tool
-          value: shellcheck
-      resources:
-        inputs:
-          - name: repo
-            resource: src
-    - name: hadolint-linting
-      taskRef:
-        name: linter-task
-      params:
-        - name: linter_tool
-          value: hadolint
-      resources:
-        inputs:
-          - name: repo
-            resource: src
-    - name: golangci-linting
-      taskRef:
-        name: linter-task
-      params:
-        - name: linter_tool
-          value: golangci-lint
       resources:
         inputs:
           - name: repo
@@ -77,10 +66,7 @@ spec:
           - name: repo
             resource: src
       runAfter:
-        - tox-linting
-        - shellcheck-linting
-        - hadolint-linting
-        - golangci-linting
+        - linting
     - name: integration-test
       taskRef:
         name: docker-build

@@ -22,6 +22,9 @@ import (
 	"github.com/wmnsk/go-gtp/gtpv2"
 )
 
+// ErrInvalidPgw indicates that an invalid PGW domain field was provided.
+var ErrInvalidPgw = errors.New("invalid PGW domain")
+
 // Pgw stores User and Control Plane information about PDN Gateway.
 type Pgw struct {
 	ControlPlane *ControlPlane
@@ -124,4 +127,39 @@ func New(s5cIP, s5uIP, sgiLink, sgiSubnet string) (pgw *Pgw) {
 	}
 
 	return
+}
+
+// Validate the IP address value of the Control Plane Network Interface.
+func (p *ControlPlane) Validate() error {
+	if p.IP == "" {
+		return errors.Wrap(ErrInvalidPgw, "empty control plane IP address")
+	}
+
+	return nil
+}
+
+// Validate the IP address value of the User Plane Network Interface.
+func (p *UserPlane) Validate() error {
+	if p.IP == "" {
+		return errors.Wrap(ErrInvalidPgw, "empty user plane IP address")
+	}
+
+	return nil
+}
+
+// Validate checks if the fields don't have empty values assigned.
+func (p *Pgw) Validate() error {
+	if p.ControlPlane == nil {
+		return errors.Wrap(ErrInvalidPgw, "no control plane")
+	}
+
+	if p.UserPlane == nil {
+		return errors.Wrap(ErrInvalidPgw, "no user plane")
+	}
+
+	if err := p.ControlPlane.Validate(); err != nil {
+		return err
+	}
+
+	return p.UserPlane.Validate()
 }

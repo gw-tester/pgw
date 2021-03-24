@@ -11,7 +11,7 @@ export CGO_ENABLED ?= 0
 DOCKER_CMD ?= $(shell which docker 2> /dev/null || which podman 2> /dev/null || echo docker)
 DOCKER_COMPOSE_CMD ?= $(shell which docker-compose 2> /dev/null || echo docker-compose)
 GO_CMD ?= $(shell which go 2> /dev/null || echo go)
-GOLANGCI_VERSION = 1.37.0
+GOLANGCI_VERSION = 1.38.0
 IMAGE_NAME=gwtester/pgw:0.0.3
 
 test:

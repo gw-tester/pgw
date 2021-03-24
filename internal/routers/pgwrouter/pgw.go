@@ -78,10 +78,14 @@ type Router interface {
 }
 
 func (r *router) registerHandlers(config *domain.Pgw) {
+	createHdl := pgwhdl.NewCreate(r.UserPlane.Connection, config)
+	r.handlers = append(r.handlers, createHdl)
+
 	r.ControlPlane.Connection.AddHandler(message.MsgTypeCreateSessionRequest, loggerhdl.Wrap(counterhdl.Wrap(
-		pgwhdl.NewCreate(r.UserPlane.Connection, config).Handle, r.sessionsProcessed)))
+		createHdl.Handle, r.sessionsProcessed)))
+
 	r.ControlPlane.Connection.AddHandler(message.MsgTypeDeleteSessionRequest, loggerhdl.Wrap(
-		pgwhdl.NewDelete().Handle))
+		pgwhdl.Handle))
 
 	http.HandleFunc("/healthcheck", handlers.NewJSONHandlerFunc(r.ManagementPlane.health, nil))
 	http.Handle("/metrics", promhttp.Handler())

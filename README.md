@@ -3,6 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/gw-tester/pgw?status.svg)](https://godoc.org/github.com/gw-tester/pgw)
 [![Docker](https://images.microbadger.com/badges/image/gwtester/pgw.svg)](http://microbadger.com/images/gwtester/pgw)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Super-Linter](https://github.com/gw-tester/pgw/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
 ## Summary
 

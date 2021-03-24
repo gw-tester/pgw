@@ -23,15 +23,8 @@ import (
 	"github.com/wmnsk/go-gtp/gtpv2/message"
 )
 
-type deleteHandler struct{}
-
-// NewDelete creates a PGW handler for deleting ISMI Sessions.
-func NewDelete() Handler {
-	return &deleteHandler{}
-}
-
 // Handle drops a IMSI Session response.
-func (h *deleteHandler) Handle(connection *gtpv2.Conn, sender net.Addr, msg message.Message) error {
+func Handle(connection *gtpv2.Conn, sender net.Addr, msg message.Message) error {
 	// assert type to refer to the struct field specific to the message.
 	// in general, no need to check if it can be type-asserted, as long as the MessageType is
 	// specified correctly in AddHandler().
@@ -69,10 +62,5 @@ func (h *deleteHandler) Handle(connection *gtpv2.Conn, sender net.Addr, msg mess
 	}).Info("Session deleted")
 	connection.RemoveSession(session)
 
-	return nil
-}
-
-// Close releases handler resources.
-func (h *deleteHandler) Close() error {
 	return nil
 }

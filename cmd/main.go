@@ -28,7 +28,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type args struct {
+type arguments struct {
 	Log           logLevel `arg:"env:LOG_LEVEL" default:"info" help:"Defines the level of logging for this program."`
 	RedisURL      string   `arg:"env:REDIS_URL" help:"Specifies the Redis URL connection string."`
 	RedisPassword string   `arg:"env:REDIS_PASSWORD" help:"Specifies the Redis user password."`
@@ -56,7 +56,7 @@ func (n *logLevel) UnmarshalText(b []byte) error {
 	return nil
 }
 
-func getRepository(a args) ports.IPRepository {
+func getRepository(a arguments) ports.IPRepository {
 	if a.RedisURL != "" {
 		return repository.NewRedis(a.RedisURL, a.RedisPassword)
 	}
@@ -68,16 +68,16 @@ func getRepository(a args) ports.IPRepository {
 	return repository.NewMemKVS()
 }
 
-func (args) Version() string {
+func (arguments) Version() string {
 	return "pgw 0.0.3"
 }
 
-func (args) Description() string {
+func (arguments) Description() string {
 	return "this program provides PDN Gateway functionality."
 }
 
 func main() {
-	var args args
+	var args arguments
 
 	arg.MustParse(&args)
 	log.SetLevel(args.Log.Level)

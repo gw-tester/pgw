@@ -1,0 +1,2 @@
+rules:
+  missing_tag: off # build multistage is a false positive

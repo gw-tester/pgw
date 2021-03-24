@@ -18,6 +18,7 @@ import (
 
 	"github.com/gw-tester/pgw/internal/core/domain"
 	"github.com/gw-tester/pgw/internal/core/ports"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,6 +26,9 @@ const (
 	s5cIP string = "pgw_s5c_ip"
 	s5uIP string = "pgw_s5u_ip"
 )
+
+// ErrSaveIP indicates a database failure during the storing IP addresses.
+var ErrSaveIP = errors.New("fail to store IP Address")
 
 // Service provides methods to create, retrieve and delete PGW instances.
 type Service struct {
@@ -43,7 +47,7 @@ func (srv *Service) Create(pgw *domain.Pgw) error {
 	if err := pgw.Validate(); err != nil {
 		log.WithError(err).Error("Invalid PGW domain object")
 
-		return ErrInvalidPGW
+		return errors.Wrap(err, "invalid PGW domain object")
 	}
 
 	if err := srv.ipRepository.Save(s5uIP, pgw.UserPlane.IP); err != nil {
@@ -65,12 +69,12 @@ func (srv *Service) Create(pgw *domain.Pgw) error {
 func (srv *Service) Get() (*domain.Pgw, error) {
 	userPlaneIP, err := srv.ipRepository.Get(s5uIP)
 	if err != nil {
-		return nil, fmt.Errorf("S5-U IP: %w", errGetIP)
+		return nil, errors.Wrap(err, "fail to get user plane IP address")
 	}
 
 	controlPlaneIP, err := srv.ipRepository.Get(s5cIP)
 	if err != nil {
-		return nil, fmt.Errorf("S5-C IP: %w", errGetIP)
+		return nil, errors.Wrap(err, "fail to get control plane IP address")
 	}
 
 	return domain.New(controlPlaneIP, userPlaneIP, "", ""), nil

@@ -26,6 +26,9 @@ import (
 	"github.com/wmnsk/go-gtp/gtpv2/message"
 )
 
+// ErrInvalidRequestType indicates that an invalid session request was received.
+var ErrInvalidRequestType = errors.New("invalid request type")
+
 type create struct {
 	userPlaneConnection *gtpv1.UPlaneConn
 
@@ -158,7 +161,11 @@ func getContextObjects(sender net.Addr, msg message.Message) (*message.CreateSes
 	// assert type to refer to the struct field specific to the message.
 	// in general, no need to check if it can be type-asserted, as long as the MessageType is
 	// specified correctly in AddHandler().
-	request := msg.(*message.CreateSessionRequest)
+	request, ok := msg.(*message.CreateSessionRequest)
+	if !ok {
+		return request, nil, nil, errors.Wrap(ErrInvalidRequestType, "failed to get the create session")
+	}
+
 	if err := validate(request); err != nil {
 		return request, nil, nil, errors.Wrap(err, "failed to get a valid create session request")
 	}
