@@ -21,28 +21,6 @@ spec:
       value: https://github.com/gw-tester/pgw
 ---
 apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: linter-task
-spec:
-  resources:
-    inputs:
-      - name: repo
-        type: git
-        targetPath: src
-  steps:
-    - name: linter
-      image: github/super-linter:v3
-      workingDir: /workspace/src
-      env:
-        - name: LINTER_RULES_PATH
-          value: /
-        - name: DEFAULT_WORKSPACE
-          value: /workspace/src
-        - name: RUN_LOCAL
-          value: "true"
----
-apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: pgw
@@ -53,7 +31,7 @@ spec:
   tasks:
     - name: linting
       taskRef:
-        name: linter-task
+        name: super-linter-task
       resources:
         inputs:
           - name: repo
