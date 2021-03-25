@@ -62,8 +62,8 @@ services:
       - NET_ADMIN
   pgw:
     build:
-      context: ../../
-    image: gwtester/pgw:0.0.3
+      context: ../
+    image: gwtester/pgw:dev
     networks:
       lte-s5u:
         ipv4_address: 172.25.0.14

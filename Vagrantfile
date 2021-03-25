@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
     # Deploy GW-Tester services
     make lint | tee ~/lint.log
     make test | tee ~/test.log
-    make build | tee ~/build.log
+    IMAGE_VERSION=dev make build | tee ~/build.log
     make deploy | tee ~/deploy.log
 
     # Wait for services
