@@ -1,3 +1,4 @@
 bin/
 .tox/
 .vagrant/
+*.log

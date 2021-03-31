@@ -27,15 +27,9 @@ push: test build
 	docker-squash $(IMAGE_NAME)
 	sudo -E $(DOCKER_CMD) push $(IMAGE_NAME)
 
-bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
-	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
-bin/golangci-lint-${GOLANGCI_VERSION}:
-	@mkdir -p bin
-	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ./bin/ v${GOLANGCI_VERSION}
-	@mv bin/golangci-lint $@
 .PHONY: lint
-lint: bin/golangci-lint
-	bin/golangci-lint run --enable-all ./...
+lint:
+	sudo -E $(DOCKER_CMD) run -e RUN_LOCAL=true --rm -e LINTER_RULES_PATH=/ -v $$(pwd):/tmp/lint github/super-linter
 
 deploy:
 	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker-compose.yml \
