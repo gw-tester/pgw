@@ -7,7 +7,7 @@
 
 ## Summary
 
-This project improves the [P-GW CNF][1] developed by *Yoshiyuki Kurauchi*
+This project improves the [P-GW CNF][1] developed by _Yoshiyuki Kurauchi_
 for testing _go-gtp_ project. The major change of this implementation
 is the usage of a external database for sharing IP addresses.
 
