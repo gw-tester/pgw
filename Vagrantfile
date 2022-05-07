@@ -24,6 +24,12 @@ Vagrant.configure("2") do |config|
   config.vm.provision 'shell', privileged: false, inline: <<-SHELL
     set -o errexit
 
+    function exit_trap {
+        sudo docker info
+        sudo docker ps -a
+        make logs
+    }
+
     cd /vagrant/
 
     # Install dependencies
@@ -31,6 +37,7 @@ Vagrant.configure("2") do |config|
     source /etc/profile.d/path.sh
 
     # Deploy GW-Tester services
+    trap exit_trap ERR
     make lint | tee ~/lint.log
     make test | tee ~/test.log
     IMAGE_VERSION=dev make build | tee ~/build.log
@@ -42,10 +49,7 @@ Vagrant.configure("2") do |config|
     until [ "$(sudo docker ps --filter "name=deployments_*_1*" --format "{{.Names}}" | wc -l)" -gt "6" ]; do
         if [ ${attempt_counter} -eq ${max_attempts} ];then
             echo "Max attempts reached"
-            sudo docker info
-            sudo docker ps -a
-            make logs
-
+            exit_trap
             exit 1
         fi
         attempt_counter=$((attempt_counter+1))

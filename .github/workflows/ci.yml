@@ -24,6 +24,13 @@ jobs:
         run: ./scripts/install.sh
       - name: Deploy GW-Tester services
         run: |
+          function exit_trap {
+              sudo docker info
+              sudo docker ps -a
+              make logs
+          }
+          trap exit_trap ERR
+
           source /etc/profile.d/path.sh
           IMAGE_VERSION=dev make build deploy
       
@@ -33,10 +40,7 @@ jobs:
           until [ "$(sudo docker ps --filter "name=deployments_*_1*" --format "{{.Names}}" | wc -l)" -gt "6" ]; do
               if [ ${attempt_counter} -eq ${max_attempts} ];then
                   echo "Max attempts reached"
-                  sudo docker info
-                  sudo docker ps -a
-                  make logs
-
+                  exit_trap
                   exit 1
               fi
               attempt_counter=$((attempt_counter+1))
