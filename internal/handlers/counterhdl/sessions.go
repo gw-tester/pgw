@@ -24,7 +24,8 @@ import (
 // Wrap ensures that Prometheus counters are increased.
 func Wrap(apiHandler func(connection *gtpv2.Conn,
 	sender net.Addr, msg message.Message) error, counter prometheus.Counter) (handler func(connection *gtpv2.Conn,
-	sender net.Addr, msg message.Message) error) {
+	sender net.Addr, msg message.Message) error,
+) {
 	return func(connection *gtpv2.Conn, sender net.Addr, msg message.Message) error {
 		err := apiHandler(connection, sender, msg)
 		if err == nil {
