@@ -29,7 +29,11 @@ push: test build
 
 .PHONY: lint
 lint:
-	sudo -E $(DOCKER_CMD) run -e RUN_LOCAL=true --rm -e LINTER_RULES_PATH=/ -v $$(pwd):/tmp/lint github/super-linter
+	sudo -E $(DOCKER_CMD) run --rm -v $$(pwd):/tmp/lint \
+	-e RUN_LOCAL=true \
+	-e LINTER_RULES_PATH=/ \
+	-e VALIDATE_KUBERNETES_KUBEVAL=false \
+	github/super-linter
 
 deploy:
 	sudo -E $(DOCKER_COMPOSE_CMD) --file deployments/docker-compose.yml \
