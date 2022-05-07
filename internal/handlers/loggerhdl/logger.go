@@ -24,7 +24,8 @@ import (
 // Wrap ensures that entry logs are registered.
 func Wrap(apiHandler func(connection *gtpv2.Conn,
 	sender net.Addr, msg message.Message) error) (handler func(connection *gtpv2.Conn,
-	sender net.Addr, msg message.Message) error) {
+	sender net.Addr, msg message.Message) error,
+) {
 	return func(connection *gtpv2.Conn, sender net.Addr, msg message.Message) error {
 		log.WithFields(log.Fields{
 			"messageType":   msg.MessageTypeName(),

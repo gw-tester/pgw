@@ -157,7 +157,8 @@ func getSession(sgwAddress net.Addr, request *message.CreateSessionRequest) (*gt
 }
 
 func getContextObjects(sender net.Addr, msg message.Message) (*message.CreateSessionRequest,
-	*gtpv2.Session, *gtpv2.Bearer, error) {
+	*gtpv2.Session, *gtpv2.Bearer, error,
+) {
 	// assert type to refer to the struct field specific to the message.
 	// in general, no need to check if it can be type-asserted, as long as the MessageType is
 	// specified correctly in AddHandler().
