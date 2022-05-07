@@ -3,3 +3,4 @@ bin/
 .vagrant/
 *.log
 *.swp
+*.dic
