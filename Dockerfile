@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine3.13 as build
+FROM golang:1.18-alpine3.15 as build
 
 WORKDIR /go/src/github.com/gw-tester/pgw
 
@@ -7,6 +7,8 @@ ENV CGO_ENABLED "0"
 ENV GOOS "linux"
 ENV GOARCH "amd64"
 ENV GOBIN=/bin
+
+RUN apk add --no-cache git=2.34.2-r0
 
 COPY go.mod go.sum ./
 COPY ./internal/imports ./internal/imports
@@ -17,7 +19,7 @@ RUN go build -v -o /bin ./...
 FROM build as test
 RUN go test -v ./...
 
-FROM alpine:3.13
+FROM alpine:3.15
 
 ENV S5U_NETWORK "172.25.0.0/24"
 ENV S5C_NETWORK "172.25.1.0/24"
