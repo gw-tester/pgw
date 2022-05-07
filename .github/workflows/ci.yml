@@ -19,7 +19,7 @@ jobs:
   check:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install dependencies
         run: ./scripts/install.sh
       - name: Deploy GW-Tester services
