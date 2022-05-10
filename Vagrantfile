@@ -38,8 +38,6 @@ Vagrant.configure("2") do |config|
 
     # Deploy GW-Tester services
     trap exit_trap ERR
-    make lint | tee ~/lint.log
-    make test | tee ~/test.log
     IMAGE_VERSION=dev make build | tee ~/build.log
     make deploy | tee ~/deploy.log
 

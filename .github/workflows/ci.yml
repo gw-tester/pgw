@@ -17,35 +17,23 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-20.04
+    runs-on: macos-10.15
     steps:
       - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: ./scripts/install.sh
-      - name: Deploy GW-Tester services
+      - uses: actions/cache@v3
+        with:
+          path: ~/.vagrant.d/boxes
+          key: ${{ runner.os }}-vagrant-${{ hashFiles('Vagrantfile') }}
+          restore-keys: |
+            ${{ runner.os }}-vagrant-
+      - name: Apply workaround for VBoxHeadless issue on macOS (https://www.virtualbox.org/ticket/20636)
+        shell: bash
         run: |
-          function exit_trap {
-              sudo docker info
-              sudo docker ps -a
-              make logs
-          }
-          trap exit_trap ERR
-
-          source /etc/profile.d/path.sh
-          IMAGE_VERSION=dev make build deploy
-      
-          # Wait for services
-          attempt_counter=0
-          max_attempts=30
-          until [ "$(sudo docker ps --filter "name=deployments_*_1*" --format "{{.Names}}" | wc -l)" -gt "6" ]; do
-              if [ ${attempt_counter} -eq ${max_attempts} ];then
-                  echo "Max attempts reached"
-                  exit_trap
-                  exit 1
-              fi
-              attempt_counter=$((attempt_counter+1))
-              sleep 10
-          done
-          sleep 10 # Wait for few client requests
-      - name: Validate GW-Tester communication
-        run: sudo ./scripts/check.sh
+          if [[ "$(VBoxManage --version)" == "6.1.28r147628" ]]; then
+              find . -type f -iname "Vagrantfile" -exec sed -i '.bak' 's|v.gui = .*|v.gui = true|g' {} \;
+              find . -type f -name "*.bak" -delete
+          fi
+      - name: Virtual Machine provisioning
+        env:
+          VAGRANT_DISABLE_VBOXSYMLINKCREATE: 1
+        run: vagrant up
