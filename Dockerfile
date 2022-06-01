@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine3.15 as build
+FROM golang:1.18-alpine3.16 as build
 
 WORKDIR /go/src/github.com/gw-tester/pgw
 
@@ -19,7 +19,7 @@ RUN go build -v -o /bin ./...
 FROM build as test
 RUN go test -v ./...
 
-FROM alpine:3.15
+FROM alpine:3.16
 
 ENV S5U_NETWORK "172.25.0.0/24"
 ENV S5C_NETWORK "172.25.1.0/24"
