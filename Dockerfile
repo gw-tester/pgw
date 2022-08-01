@@ -8,7 +8,7 @@ ENV GOOS "linux"
 ENV GOARCH "amd64"
 ENV GOBIN=/bin
 
-RUN apk add --no-cache git=2.34.2-r0
+RUN apk add --no-cache git=2.34.4-r0
 
 COPY go.mod go.sum ./
 COPY ./internal/imports ./internal/imports
